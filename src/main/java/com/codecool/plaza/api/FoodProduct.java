@@ -10,17 +10,19 @@ public class FoodProduct extends Product {
 
     private int calories;
     private Date bestBefore;
+
     public FoodProduct(String name, long barcode, String manufacturer, int calories, Date bestBefore) {
         super(name,barcode,manufacturer);
         this.calories = calories;
         this.bestBefore = bestBefore;
     }
 
-    public int isStillConsumable(){
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public boolean isStillConsumable(){
         Date date = new Date();
-        System.out.println(dateFormat.format(date)); //2016/11/16 12:08:43
-        return date.compareTo(bestBefore);
+        String bestBeforeDate = new SimpleDateFormat("yyyy-MM-dd").format(bestBefore);
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        int compareDates = bestBeforeDate.compareTo(currentDate);
+        return compareDates >= 0;
     }
 
     public int getCalories() {
