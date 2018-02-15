@@ -81,7 +81,8 @@ public class CmdProgram {
                         for (int i = 0; i < plaza.getShops().size(); i++) {
                             String name = plaza.getShops().get(i).getName();
                             String owner = plaza.getShops().get(i).getOwner();
-                            System.out.println((i + 1) + ". Shop name: " + name + ", Owner of the shop: " + owner);
+                            boolean status = plaza.getShops().get(i).isOpen();
+                            System.out.println((i + 1) + ". Shop name: " + name + ", Owner of the shop: " + owner+", It' opened: "+ status);
                         }
                     } catch (PlazaIsClosedException | NullPointerException e) {
                         e.printStackTrace();
@@ -122,12 +123,12 @@ public class CmdProgram {
                     break;
                 case "4":
                     System.out.println("Enter shop's name:");
-                    String w = reader.nextLine();
+                    reader.nextLine();
                     String shpName = reader.nextLine();
 
                     try {
                         Shop tmpShop = plaza.findShopByName(shpName);
-                        shopMenu(tmpShop);
+                        shopMenu(tmpShop,cart);
                     } catch (NoSuchShopException | PlazaIsClosedException e) {
                         System.out.println(e.getMessage());
                     }
@@ -171,7 +172,7 @@ public class CmdProgram {
         }
     }
 
-    public void shopMenu(Shop shop) {
+    public void shopMenu(Shop shop, List<Product> cart) {
         clearScreen();
         Map<Long, ShopImpl.ShopImplEntry> products = shop.getProductsMap();
         while (true) {
@@ -184,8 +185,7 @@ public class CmdProgram {
                 "5) to close the shop.\n" +
                 "6) to add new product to the shop.\n" +
                 "7) to add existing products to the shop.\n" +
-                "8) to set the price of a product by it's barcode\n" +
-                "9) to buy a product by barcode.\n" +
+                "8) to buy a product by barcode.\n" +
                 "N) go back to plaza.");
             String shopChoice = reader.next();
 
@@ -193,7 +193,7 @@ public class CmdProgram {
                 case "1":
 
                     for (Map.Entry<Long, ShopImpl.ShopImplEntry> entry : shop.getProductsMap().entrySet()) {
-                        System.out.println(entry.getValue());
+                        System.out.println(entry.getValue() + " ");
                     }
                     break;
                 case "2":
@@ -282,7 +282,7 @@ public class CmdProgram {
                                 String type = reader.nextLine();
                                 try{
                                     shop.addNewProduct(new ClothingProduct(name, barcode, manufacturer, mater, type), quantity, price);
-
+                                    break;
                                 }catch (ShopIsClosedException shp) {
                                     System.out.println(shp.getMessage());
                                 }
@@ -297,7 +297,21 @@ public class CmdProgram {
                     break;
 
                 case "7":
-                    System.out.println("7) to add existing products to the shop.\n");
+                    System.out.println("Enter the barcode of the product");
+                    long bCodeInp = reader.nextLong();
+
+
+                    System.out.println("Please enter the quantity of the product");
+                    int addQuantity = reader.nextInt();
+
+                    try {
+                        shop.addProduct(bCodeInp, addQuantity);
+                        break;
+                    } catch (NoSuchProductException ex) {
+                        System.out.println(ex.getMessage());
+                    }catch (ShopIsClosedException shc) {
+                        System.out.println(shc.getMessage());
+                    }
                     break;
                 case "8":
                     System.out.println("8) to buy a product by barcode.\n");
@@ -307,7 +321,7 @@ public class CmdProgram {
                     mainMenu();
                     break;
                 default:
-                    System.out.println("Wrong input entered! Enter a product from the given list!");
+                    System.out.println("Wrong input entered! Enter a proer input from the given list!");
             }
         }
     }
