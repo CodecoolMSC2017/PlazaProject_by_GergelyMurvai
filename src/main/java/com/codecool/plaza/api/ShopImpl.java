@@ -1,8 +1,6 @@
 package com.codecool.plaza.api;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ShopImpl implements Shop {
 
@@ -37,11 +35,31 @@ public class ShopImpl implements Shop {
     }
 
     @Override
+    public List<Product> getAllProducts() throws ShopIsClosedException {
+        List<Product> productList = new ArrayList<>();
+        if (isOpen()) {
+            for (ShopImplEntry temp : products.values()) {
+                productList.add(temp.getProduct());
+                return productList;
+            }
+        } else {
+            throw new ShopIsClosedException("This shop is closed!\n");
+        }
+        return null;
+
+    }
+
+    @Override
+    public float getPrice(long barcode) {
+        return 0;
+    }
+
+    @Override
     public boolean isOpen() {
         return open;
     }
 
-    public Map<Long, ShopImplEntry> getProductsMap() {
+    public Map<Long, ShopImplEntry> getProducts() {
         return products;
     }
 
@@ -74,7 +92,7 @@ public class ShopImpl implements Shop {
             }
             return false;
         }
-        throw new ShopIsClosedException("This shop is closed!");
+        throw new ShopIsClosedException("This hop is closed!\n");
     }
 
     public void addNewProduct(Product product, int quantity, float price) throws ProductAlreadyExistsException, ShopIsClosedException {
@@ -84,10 +102,11 @@ public class ShopImpl implements Shop {
                 products.put(barcode, new ShopImplEntry(product, quantity, price));
             }
             throw new ProductAlreadyExistsException("This product already exist!");
+
         }
         throw new ShopIsClosedException("This shop is closed!");
-
     }
+
 
     public void addProduct(long barcode, int quantity) throws NoSuchProductException, ShopIsClosedException {
         if (isOpen()) {
@@ -109,11 +128,14 @@ public class ShopImpl implements Shop {
             if (hasProduct(barcode)) {
                 for (Map.Entry<Long, ShopImplEntry> entry : products.entrySet()) {
                     if (barcode == entry.getKey()) {
-                        if (entry.getValue().getQuantity()>0) {
+                        if (entry.getValue().getQuantity() > 0) {
                             entry.getValue().decreaseQuantity(1);
                             return entry.getValue().getProduct();
+
+                        } else {
+                            throw new OutOfStockException("This product is out of stock!");
                         }
-                        throw new OutOfStockException("This product is out of stock!");
+
                     }
                 }
             }
@@ -122,54 +144,54 @@ public class ShopImpl implements Shop {
         throw new ShopIsClosedException("This shop is closed!");
     }
 
-    public class ShopImplEntry {
-        private Product product;
-        private int quantity;
-        private float price;
+private class ShopImplEntry {
+    private Product product;
+    private int quantity;
+    private float price;
 
-        public ShopImplEntry(Product product, int quantity, float price) {
-            this.product = product;
-            this.quantity = quantity;
-            this.price = price;
-        }
-
-        public Product getProduct() {
-            return product;
-        }
-
-        public void setProduct(Product product) {
-            this.product = product;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
-        }
-
-        public void increaseQuantity(int amount) {
-            quantity += amount;
-        }
-
-        public void decreaseQuantity(int amount) {
-            quantity -= amount;
-        }
-
-        public float getPrice() {
-            return price;
-        }
-
-        public void setPrice(int price) {
-            this.price = price;
-        }
-
-        public String toString() {
-            return getProduct() + ", quantity: " + getQuantity() + ", price: " + getPrice();
-        }
-
+    public ShopImplEntry(Product product, int quantity, float price) {
+        this.product = product;
+        this.quantity = quantity;
+        this.price = price;
     }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void increaseQuantity(int amount) {
+        quantity += amount;
+    }
+
+    public void decreaseQuantity(int amount) {
+        quantity -= amount;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public String toString() {
+        return getProduct().toString() + ", quantity: " + getQuantity() + ", price: " + getPrice();
+    }
+
+}
 
 
 }

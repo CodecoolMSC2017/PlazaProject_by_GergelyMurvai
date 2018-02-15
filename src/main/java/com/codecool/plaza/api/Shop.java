@@ -1,5 +1,6 @@
 package com.codecool.plaza.api;
 
+import java.util.List;
 import java.util.Map;
 
 public interface Shop {
@@ -13,7 +14,9 @@ public interface Shop {
 
     public void close();
 
-    public Map<Long, ShopImpl.ShopImplEntry> getProductsMap();
+    public List<Product> getAllProducts() throws ShopIsClosedException ;
+
+    public float getPrice(long barcode);
 
     public Product findByName(String name) throws ShopIsClosedException, NoSuchProductException;
 

@@ -16,7 +16,7 @@ public class CmdProgram {
     private String ownerName;
     private PlazaImpl plaza;
     private ShopImpl shop;
-
+    private float credit = 0;
     private final Scanner reader = new Scanner(System.in);
 
     public CmdProgram(String[] args) {
@@ -24,7 +24,6 @@ public class CmdProgram {
 
 
     public void run() {
-        init();
         mainMenu();
     }
 
@@ -33,35 +32,15 @@ public class CmdProgram {
         System.out.flush();
     }
 
-    public void init() {
-        clearScreen();
-        System.out.println("There are no plaza created yet! Press\n" +
-            "1) to create a new plaza.\n" +
-            "2) to exit.\n");
-        String initChoose = reader.next();
-
-        switch (initChoose) {
-
-            case "1":
-                System.out.println("Type your name !");
-                ownerName = reader.next();
-                System.out.println("Add a name for your fancy new Plaza! ");
-                //String s = reader.nextLine();
-                plazaName = reader.next();
-                plaza = new PlazaImpl(ownerName, plazaName);
-                break;
-            case "2":
-                System.out.println("Ok! See you soon! ");
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Wrong input entered");
-                break;
-        }
-    }
-
     public void mainMenu() {
-        clearScreen();
+
+        System.out.println("Type your name !");
+        ownerName = reader.next();
+        System.out.println("Type the new Plaza's name!");
+        //String s = reader.nextLine();
+        plazaName = reader.next();
+        plaza = new PlazaImpl(ownerName, plazaName);
+
         while (true) {
             System.out.println("Welcome into the " + plaza.getName() + " owned by: " + plaza.getOwnerName() + "\n");
             System.out.println("1) to list all shops.\n" +
@@ -76,7 +55,6 @@ public class CmdProgram {
 
             switch (choice) {
                 case "1":
-                    clearScreen();
                     try {
                         for (int i = 0; i < plaza.getShops().size(); i++) {
                             String name = plaza.getShops().get(i).getName();
@@ -97,7 +75,7 @@ public class CmdProgram {
                     try {
                         plaza.addShop(new ShopImpl(shopName, shopOwner));
                     } catch (ShopAlreadyExistsException | PlazaIsClosedException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                     break;
                 case "3":
@@ -115,7 +93,7 @@ public class CmdProgram {
                                 }
                             }
                         } catch (NoSuchShopException | ConcurrentModificationException | PlazaIsClosedException | NullPointerException e) {
-                            e.printStackTrace();
+                            System.out.println(e.getMessage());
                         }
                     } else if (ans.equalsIgnoreCase("n")) {
                         continue;
@@ -134,7 +112,7 @@ public class CmdProgram {
                     }
                     break;
                 case "5":
-                    clearScreen();
+
                     if (plaza.isOpen() == true) {
                         System.out.println("Your Mall is already open!");
                     } else {
@@ -143,7 +121,7 @@ public class CmdProgram {
                     }
                     break;
                 case "6":
-                    clearScreen();
+
                     if (plaza.isOpen() == false) {
                         System.out.println("Your Mall is already closed!");
                     } else {
@@ -152,7 +130,7 @@ public class CmdProgram {
                     }
                     break;
                 case "7":
-                    clearScreen();
+
                     String status = "";
                     if (plaza.isOpen() == true) {
                         status = "Open";
@@ -173,8 +151,8 @@ public class CmdProgram {
     }
 
     public void shopMenu(Shop shop, List<Product> cart) {
-        clearScreen();
-        Map<Long, ShopImpl.ShopImplEntry> products = shop.getProductsMap();
+
+
         while (true) {
             System.out.println("Hi! This is the " + shop.getName() + " owned by" + shop.getOwner() + ", welcome!\n" +
                 "Press\n" +
@@ -186,15 +164,21 @@ public class CmdProgram {
                 "6) to add new product to the shop.\n" +
                 "7) to add existing products to the shop.\n" +
                 "8) to buy a product by barcode.\n" +
+                "9) to print your cart \n" +
                 "N) go back to plaza.");
             String shopChoice = reader.next();
 
             switch (shopChoice) {
                 case "1":
-
-                    for (Map.Entry<Long, ShopImpl.ShopImplEntry> entry : shop.getProductsMap().entrySet()) {
-                        System.out.println(entry.getValue() + " ");
+                    try{
+                        List<Product> tempProductList = shop.getAllProducts();
+                        for (Product product : tempProductList){
+                            System.out.println(product.toString() + ", price: " + shop.getPrice(product.getBarcode()));
+                        }
+                    } catch (ShopIsClosedException |NullPointerException ex) {
+                        System.out.println(ex.getMessage());
                     }
+                    System.out.println("\n");
                     break;
                 case "2":
                     System.out.println("Type the name of the product. ");
@@ -227,28 +211,47 @@ public class CmdProgram {
                     }
                     break;
                 case "6":
-                    System.out.println("Please enter the name of the product");
-                    String l = reader.nextLine();
+                    reader.nextLine();
+                    System.out.println("Enter the name of the product :");
                     String name = reader.nextLine();
 
                     System.out.println("Please enter the manufacturer of the product");
                     String manufacturer = reader.nextLine();
 
                     System.out.println("Please enter the barcode of the product");
-                    long barcode = reader.nextLong();
+                    String barcodeString = reader.nextLine();
+                    long barcode;
+                    try {
+                        barcode = Long.parseLong(barcodeString);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Wrong input entered! Enter a number!");
+                        break;
+                    }
 
                     System.out.println("Please enter the quantity of the product");
-                    int quantity = reader.nextInt();
+                    String quantityString = reader.nextLine();
+                    int quantity;
+                    try {
+                        quantity = Integer.parseInt(quantityString);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Wrong input entered! Enter a number!");
+                        break;
+                    }
 
                     System.out.println("Please enter the price of the product");
-                    float price = reader.nextFloat();
-
-
-                    System.out.println("Please enter the type of the product! (Food, Clothing,)");
-
-                    String prodType = reader.next();
+                    String priceString = reader.nextLine();
+                    float price;
                     try {
-                        switch (prodType) {
+                        price = Float.parseFloat(priceString);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Wrong input entered! Enter a number!");
+                        break;
+                    }
+
+                    System.out.println("Please enter the type of the product! (Food, Cloth)");
+                    String cases = reader.nextLine();
+                    try {
+                        switch (cases) {
                             case "Food":
                                 System.out.println("Num of Calories: ");
                                 int calories = reader.nextInt();
@@ -273,9 +276,8 @@ public class CmdProgram {
                                     System.out.println(scl.getMessage());
                                 }
                                 break;
-                            case "Clothing":
+                            case "Cloth":
                                 System.out.println("Material: ");
-                                reader.nextLine();
                                 String mater = reader.nextLine();
 
                                 System.out.println("Type of the garment: ");
@@ -287,10 +289,13 @@ public class CmdProgram {
                                     System.out.println(shp.getMessage());
                                 }
                                 break;
+
                             default:
                                 System.out.println("Wrong input entered! Enter a product from the given list!");
                                 break;
                         }
+
+
                     } catch (ProductAlreadyExistsException ex) {
                         System.out.println(ex.getMessage());
                     }
@@ -300,21 +305,41 @@ public class CmdProgram {
                     System.out.println("Enter the barcode of the product");
                     long bCodeInp = reader.nextLong();
 
-
                     System.out.println("Please enter the quantity of the product");
                     int addQuantity = reader.nextInt();
 
                     try {
                         shop.addProduct(bCodeInp, addQuantity);
                         break;
-                    } catch (NoSuchProductException ex) {
+                    } catch (NoSuchProductException | ShopIsClosedException ex) {
                         System.out.println(ex.getMessage());
-                    }catch (ShopIsClosedException shc) {
-                        System.out.println(shc.getMessage());
-                    }
+
                     break;
                 case "8":
-                    System.out.println("8) to buy a product by barcode.\n");
+                    int rounds = 0;
+                    System.out.println("Enter the item's barcode  what you want to buy:");
+                    long code = reader.nextLong();
+
+                    System.out.println("Enter how many you want to buy:");
+                    int amount = reader.nextInt();
+                    while(rounds <amount) {
+                        try {
+                            cart.add(shop.buyProduct(code));
+                            credit += (shop.getPrice(code));
+                            rounds ++;
+
+                        } catch (NoSuchProductException | ShopIsClosedException | OutOfStockException e) {
+                            System.out.println(e.getMessage());
+                            break;
+                        }
+                    }
+                    break;
+                case "9":
+                    System.out.println("Your shopping cart list : ");
+                    for (Product prod:cart) {
+                        System.out.println(" - " + prod.getName());
+                    }
+                    System.out.println(credit);
                     break;
                 case "N":
                     System.out.println("Back into " + plaza.getName() + " plaza.\n");

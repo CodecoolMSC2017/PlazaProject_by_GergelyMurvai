@@ -38,17 +38,16 @@ public class PlazaImpl implements Plaza {
 
     @Override
     public void addShop(Shop shop) throws ShopAlreadyExistsException, PlazaIsClosedException {
-
-
         if (isOpen()) {
-            if (!shops.contains(shop)) {
-                shops.add(shop);
-            } else {
-                throw new ShopAlreadyExistsException("Shop "+ shop.getName()+ " is already exist\n");
+            for (Shop s : shops) {
+                if (shop.getName().equals(s.getName())) {
+                    throw new ShopAlreadyExistsException("This shop is already exist!");
+                }
             }
-        } else {
-            throw new PlazaIsClosedException("Plaza " + name + " is closed!\n");
+            shops.add(shop);
+            return;
         }
+        throw new PlazaIsClosedException("Plaza is Closed!");
     }
 
     public List<Shop> getShops() throws PlazaIsClosedException {
