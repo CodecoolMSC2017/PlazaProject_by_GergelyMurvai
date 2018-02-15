@@ -2,10 +2,11 @@ package com.codecool.plaza.cmdprog;
 
 import com.codecool.plaza.api.*;
 
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.Scanner;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CmdProgram {
     Product product;
@@ -29,6 +30,7 @@ public class CmdProgram {
 
     public void clearScreen() {
         System.out.print("\033[H\033[2J");
+        System.out.flush();
     }
 
     public void init() {
@@ -46,7 +48,7 @@ public class CmdProgram {
                 System.out.println("Add a name for your fancy new Plaza! ");
                 //String s = reader.nextLine();
                 plazaName = reader.next();
-                plaza = new PlazaImpl(ownerName,plazaName);
+                plaza = new PlazaImpl(ownerName, plazaName);
                 break;
             case "2":
                 System.out.println("Ok! See you soon! ");
@@ -60,8 +62,8 @@ public class CmdProgram {
 
     public void mainMenu() {
         clearScreen();
-        while(true) {
-            System.out.println("Welcome into the "+ plaza.getName()+" owned by: "+ plaza.getOwnerName()+"\n");
+        while (true) {
+            System.out.println("Welcome into the " + plaza.getName() + " owned by: " + plaza.getOwnerName() + "\n");
             System.out.println("1) to list all shops.\n" +
                 "2) to add a new shop.\n" +
                 "3) to remove an existing shop.\n" +
@@ -72,7 +74,7 @@ public class CmdProgram {
                 "8) leave plaza.");
             String choice = reader.next();
 
-            switch(choice) {
+            switch (choice) {
                 case "1":
                     clearScreen();
                     try {
@@ -99,13 +101,14 @@ public class CmdProgram {
                     break;
                 case "3":
                     System.out.println("Do you really want to remove a store? (y/n)");
+                    String q = reader.nextLine();
                     String ans = reader.nextLine();
                     if (ans.equalsIgnoreCase("y")) {
                         System.out.println("Enter the name of the store:");
-                        String delete = reader.nextLine();
+                        String del = reader.nextLine();
                         try {
                             for (Shop sh : plaza.getShops()) {
-                                if (delete.equalsIgnoreCase(sh.getName())) {
+                                if (del.equals(sh.getName())) {
                                     plaza.removeShop(sh);
                                     System.out.println(sh.getName() + " deleted.");
                                 }
@@ -119,41 +122,43 @@ public class CmdProgram {
                     break;
                 case "4":
                     System.out.println("Enter shop's name:");
-                    String sname = reader.nextLine();
+                    String w = reader.nextLine();
+                    String shpName = reader.nextLine();
 
                     try {
-                        plaza.findShopByName(sname);
+                        Shop tmpShop = plaza.findShopByName(shpName);
+                        shopMenu(tmpShop);
                     } catch (NoSuchShopException | PlazaIsClosedException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                     break;
                 case "5":
                     clearScreen();
-                    if(plaza.isOpen() == true) {
+                    if (plaza.isOpen() == true) {
                         System.out.println("Your Mall is already open!");
-                    }else {
+                    } else {
                         plaza.open();
-                        System.out.println("You opened "+ plaza.getName()+"!");
+                        System.out.println("You opened " + plaza.getName() + "!");
                     }
                     break;
                 case "6":
                     clearScreen();
-                    if(plaza.isOpen() == false) {
+                    if (plaza.isOpen() == false) {
                         System.out.println("Your Mall is already closed!");
-                    }else {
+                    } else {
                         plaza.close();
-                        System.out.println("You closed "+ plaza.getName()+"!");
+                        System.out.println("You closed " + plaza.getName() + "!");
                     }
                     break;
                 case "7":
                     clearScreen();
                     String status = "";
-                    if(plaza.isOpen() == true) {
+                    if (plaza.isOpen() == true) {
                         status = "Open";
-                    }else if(plaza.isOpen() == false){
+                    } else if (plaza.isOpen() == false) {
                         status = "Closed";
                     }
-                    System.out.println("Status: " + status +"\n");
+                    System.out.println("Status: " + status + "\n");
                     break;
                 case "8":
                     System.out.println("Ok! See you soon! ");
@@ -166,10 +171,12 @@ public class CmdProgram {
         }
     }
 
-    public void shopMenu() {
+    public void shopMenu(Shop shop) {
         clearScreen();
-        while(true) {
-            System.out.println("Hi! This is the Supercharged Cotton Chicken Deluxe Grocery Store, welcome! Press\n" +
+        Map<Long, ShopImpl.ShopImplEntry> products = shop.getProductsMap();
+        while (true) {
+            System.out.println("Hi! This is the " + shop.getName() + " owned by" + shop.getOwner() + ", welcome!\n" +
+                "Press\n" +
                 "1) to list available products.\n" +
                 "2) to find products by name.\n" +
                 "3) to display the shop's owner.\n" +
@@ -177,31 +184,131 @@ public class CmdProgram {
                 "5) to close the shop.\n" +
                 "6) to add new product to the shop.\n" +
                 "7) to add existing products to the shop.\n" +
-                "8) to buy a product by barcode.\n" +
+                "8) to set the price of a product by it's barcode\n" +
+                "9) to buy a product by barcode.\n" +
                 "N) go back to plaza.");
             String shopChoice = reader.next();
 
             switch (shopChoice) {
                 case "1":
-                    System.out.println("1) to list available products.\n");
+
+                    for (Map.Entry<Long, ShopImpl.ShopImplEntry> entry : shop.getProductsMap().entrySet()) {
+                        System.out.println(entry.getValue());
+                    }
+                    break;
                 case "2":
-                    System.out.println("2) to find products by name.\n");
+                    System.out.println("Type the name of the product. ");
+                    String nameSearch = reader.next();
+                    try {
+                        System.out.println(shop.findByName(nameSearch));
+                    } catch (ShopIsClosedException e) {
+                        System.out.println(e.getMessage());
+                    } catch (NoSuchProductException nsp) {
+                        System.out.println(nsp.getMessage());
+                    }
+                    break;
                 case "3":
-                    System.out.println("3) to display the shop's owner.\n");
+                    System.out.println("The shop's owner is: " + shop.getOwner());
+                    break;
                 case "4":
-                    System.out.println("4) to open the shop.\n");
+                    if (shop.isOpen() == true) {
+                        System.out.println(shop.getName() + " is already open");
+                    } else {
+                        shop.open();
+                        System.out.println(shop.getName() + " is opened.\n");
+                    }
+                    break;
                 case "5":
-                    System.out.println("5) to close the shop.\n");
+                    if (shop.isOpen() != true) {
+                        System.out.println(shop.getName() + " is already closed");
+                    } else {
+                        shop.open();
+                        System.out.println(shop.getName() + " is closed.\n");
+                    }
+                    break;
                 case "6":
-                    System.out.println("6) to add new product to the shop.\n");
+                    System.out.println("Please enter the name of the product");
+                    String l = reader.nextLine();
+                    String name = reader.nextLine();
+
+                    System.out.println("Please enter the manufacturer of the product");
+                    String manufacturer = reader.nextLine();
+
+                    System.out.println("Please enter the barcode of the product");
+                    long barcode = reader.nextLong();
+
+                    System.out.println("Please enter the quantity of the product");
+                    int quantity = reader.nextInt();
+
+                    System.out.println("Please enter the price of the product");
+                    float price = reader.nextFloat();
+
+
+                    System.out.println("Please enter the type of the product! (Food, Clothing,)");
+
+                    String prodType = reader.next();
+                    try {
+                        switch (prodType) {
+                            case "Food":
+                                System.out.println("Num of Calories: ");
+                                int calories = reader.nextInt();
+
+                                System.out.println("Best before /yyyy-MM-dd/: ");
+
+                                String bestBeforeStr = reader.next();
+
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                Date bestBefore = null;
+                                try {
+                                    bestBefore = dateFormat.parse(bestBeforeStr);
+                                } catch (ParseException ex) {
+                                    System.out.println("Wrong input entered! Enter a number!");
+                                    break;
+                                }
+
+                                try {
+                                    shop.addNewProduct((new FoodProduct(name, barcode, manufacturer, calories, bestBefore)), quantity, price);
+
+                                } catch (ShopIsClosedException scl) {
+                                    System.out.println(scl.getMessage());
+                                }
+                                break;
+                            case "Clothing":
+                                System.out.println("Material: ");
+                                reader.nextLine();
+                                String mater = reader.nextLine();
+
+                                System.out.println("Type of the garment: ");
+                                String type = reader.nextLine();
+                                try{
+                                    shop.addNewProduct(new ClothingProduct(name, barcode, manufacturer, mater, type), quantity, price);
+
+                                }catch (ShopIsClosedException shp) {
+                                    System.out.println(shp.getMessage());
+                                }
+                                break;
+                            default:
+                                System.out.println("Wrong input entered! Enter a product from the given list!");
+                                break;
+                        }
+                    } catch (ProductAlreadyExistsException ex) {
+                        System.out.println(ex.getMessage());
+                    }
+                    break;
+
                 case "7":
                     System.out.println("7) to add existing products to the shop.\n");
+                    break;
                 case "8":
                     System.out.println("8) to buy a product by barcode.\n");
+                    break;
                 case "N":
-                    System.out.println("N) go back to plaza.\n");
+                    System.out.println("Back into " + plaza.getName() + " plaza.\n");
+                    mainMenu();
+                    break;
+                default:
+                    System.out.println("Wrong input entered! Enter a product from the given list!");
             }
         }
     }
 }
-

@@ -1,5 +1,7 @@
 package com.codecool.plaza.api;
 
+import java.util.Map;
+
 public interface Shop {
     public String getName();
 
@@ -11,7 +13,9 @@ public interface Shop {
 
     public void close();
 
-    public Product findByName(String name) throws ShopIsClosedException;
+    public Map<Long, ShopImpl.ShopImplEntry> getProductsMap();
+
+    public Product findByName(String name) throws ShopIsClosedException, NoSuchProductException;
 
     public boolean hasProduct(long barcode) throws ShopIsClosedException;
 
@@ -19,7 +23,7 @@ public interface Shop {
 
     public void addProduct(long barcode, int quantity) throws NoSuchProductException, ShopIsClosedException;
 
-    public Product buyProduct(long barcode) throws NoSuchProductException, ShopIsClosedException;
+    public Product buyProduct(long barcode) throws NoSuchProductException, ShopIsClosedException, OutOfStockException;
 
     public String toString();
 

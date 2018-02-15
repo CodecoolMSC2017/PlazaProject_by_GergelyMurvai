@@ -1,5 +1,6 @@
 package com.codecool.plaza.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlazaImpl implements Plaza {
@@ -13,6 +14,7 @@ public class PlazaImpl implements Plaza {
     public PlazaImpl(String owner,String name) {
         this.owner = owner;
         this.name = name;
+        shops = new ArrayList<>();
         open = false;
     }
 
@@ -36,6 +38,8 @@ public class PlazaImpl implements Plaza {
 
     @Override
     public void addShop(Shop shop) throws ShopAlreadyExistsException, PlazaIsClosedException {
+
+
         if (isOpen()) {
             if (!shops.contains(shop)) {
                 shops.add(shop);
@@ -56,25 +60,30 @@ public class PlazaImpl implements Plaza {
 
     public void removeShop(Shop shop) throws NoSuchShopException, PlazaIsClosedException {
         if (isOpen()) {
-            if (shopIsExist(shop)) {
+            if (shops.contains(shop)) {
                 shops.remove(shop);
+            } else {
+                throw new NoSuchShopException("There's no shop found in this plaza!");
             }
-            throw new NoSuchShopException("There's no shop found in this plaza!");
-
+        }else{
+            throw new PlazaIsClosedException("The plaza is closed!");
         }
-        throw new PlazaIsClosedException("The plaza is closed!");
     }
 
     public Shop findShopByName(String name) throws NoSuchShopException, PlazaIsClosedException {
+
         if (isOpen()) {
-            for (Shop shop:shops) {
-                if(shop.getName().equals(name)) {
+            for (Shop shop : shops) {
+                if (shop.getName().equals(name)) {
                     return shop;
+                } else {
+                    throw new NoSuchShopException("There's no shop found in this plaza!");
                 }
-                throw new NoSuchShopException("There's no shop found in this plaza!");
             }
+        } else {
+            throw new PlazaIsClosedException("The plaza is closed!");
         }
-        throw new PlazaIsClosedException("The plaza is closed!");
+        return null;
     }
 
     public boolean isOpen() {
