@@ -30,6 +30,6 @@ public class FoodProduct extends Product {
     }
 
     public String toString() {
-        return "name: "+getName() + "is consumable: "+ isStillConsumable() + "calories: "+ getCalories();
+        return "Product barcode: "+getBarcode()+"; name: "+getName() + "; is consumable: "+ isStillConsumable() + "; calories: "+ getCalories();
     }
 }

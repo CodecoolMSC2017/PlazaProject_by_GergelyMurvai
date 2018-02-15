@@ -166,7 +166,7 @@ public class ShopImpl implements Shop {
         }
 
         public String toString() {
-            return getProduct() + "quantity: " + getQuantity() + "price: " + getPrice();
+            return getProduct() + ", quantity: " + getQuantity() + ", price: " + getPrice();
         }
 
     }
