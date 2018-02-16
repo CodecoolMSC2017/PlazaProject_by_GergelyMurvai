@@ -13,7 +13,7 @@ public class ShopImpl implements Shop {
         this.name = name;
         this.owner = owner;
         open = false;
-        products = new HashMap<Long, ShopImplEntry>();
+        products = new HashMap<>();
     }
 
     public String getName() {
@@ -97,11 +97,11 @@ public class ShopImpl implements Shop {
 
     public void addNewProduct(Product product, int quantity, float price) throws ProductAlreadyExistsException, ShopIsClosedException {
         if (isOpen()) {
-            long barcode = product.getBarcode();
-            if (!hasProduct(barcode)) {
-                products.put(barcode, new ShopImplEntry(product, quantity, price));
+            if (hasProduct(product.getBarcode())) {
+                throw new ProductAlreadyExistsException("This product already exist!");
+            } else {
+                products.put(product.getBarcode(), new ShopImplEntry(product, quantity, price));
             }
-            throw new ProductAlreadyExistsException("This product already exist!");
 
         }
         throw new ShopIsClosedException("This shop is closed!");
@@ -144,54 +144,54 @@ public class ShopImpl implements Shop {
         throw new ShopIsClosedException("This shop is closed!");
     }
 
-private class ShopImplEntry {
-    private Product product;
-    private int quantity;
-    private float price;
+    private class ShopImplEntry {
+        private Product product;
+        private int quantity;
+        private float price;
 
-    public ShopImplEntry(Product product, int quantity, float price) {
-        this.product = product;
-        this.quantity = quantity;
-        this.price = price;
+        public ShopImplEntry(Product product, int quantity, float price) {
+            this.product = product;
+            this.quantity = quantity;
+            this.price = price;
+        }
+
+        public Product getProduct() {
+            return product;
+        }
+
+        public void setProduct(Product product) {
+            this.product = product;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+
+        public void increaseQuantity(int amount) {
+            quantity += amount;
+        }
+
+        public void decreaseQuantity(int amount) {
+            quantity -= amount;
+        }
+
+        public float getPrice() {
+            return price;
+        }
+
+        public void setPrice(int price) {
+            this.price = price;
+        }
+
+        public String toString() {
+            return getProduct().toString() + ", quantity: " + getQuantity() + ", price: " + getPrice();
+        }
+
     }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public void increaseQuantity(int amount) {
-        quantity += amount;
-    }
-
-    public void decreaseQuantity(int amount) {
-        quantity -= amount;
-    }
-
-    public float getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public String toString() {
-        return getProduct().toString() + ", quantity: " + getQuantity() + ", price: " + getPrice();
-    }
-
-}
 
 
 }

@@ -60,7 +60,7 @@ public class CmdProgram {
                             String name = plaza.getShops().get(i).getName();
                             String owner = plaza.getShops().get(i).getOwner();
                             boolean status = plaza.getShops().get(i).isOpen();
-                            System.out.println((i + 1) + ". Shop name: " + name + ", Owner of the shop: " + owner+", It' opened: "+ status);
+                            System.out.println((i + 1) + ". Shop name: " + name + ", Owner of the shop: " + owner + ", It' opened: " + status);
                         }
                     } catch (PlazaIsClosedException | NullPointerException e) {
                         e.printStackTrace();
@@ -106,7 +106,8 @@ public class CmdProgram {
 
                     try {
                         Shop tmpShop = plaza.findShopByName(shpName);
-                        shopMenu(tmpShop,cart);
+                        shop = (ShopImpl)tmpShop;
+                        shopMenu(shop, cart);
                     } catch (NoSuchShopException | PlazaIsClosedException e) {
                         System.out.println(e.getMessage());
                     }
@@ -150,7 +151,7 @@ public class CmdProgram {
         }
     }
 
-    public void shopMenu(Shop shop, List<Product> cart) {
+    public void shopMenu(ShopImpl shop, List<Product> cart) {
 
 
         while (true) {
@@ -170,12 +171,12 @@ public class CmdProgram {
 
             switch (shopChoice) {
                 case "1":
-                    try{
+                    try {
                         List<Product> tempProductList = shop.getAllProducts();
-                        for (Product product : tempProductList){
+                        for (Product product : tempProductList) {
                             System.out.println(product.toString() + ", price: " + shop.getPrice(product.getBarcode()));
                         }
-                    } catch (ShopIsClosedException |NullPointerException ex) {
+                    } catch (ShopIsClosedException | NullPointerException ex) {
                         System.out.println(ex.getMessage());
                     }
                     System.out.println("\n");
@@ -211,6 +212,7 @@ public class CmdProgram {
                     }
                     break;
                 case "6":
+                    Product newProduct = null;
                     reader.nextLine();
                     System.out.println("Enter the name of the product :");
                     String name = reader.nextLine();
@@ -228,9 +230,48 @@ public class CmdProgram {
                         break;
                     }
 
+
+                    System.out.println("Please enter the type of the product! (Food, Cloth)");
+                    String cases = reader.nextLine();
+
+                    switch (cases) {
+                        case "Food":
+                            System.out.println("Num of Calories: ");
+                            int calories = reader.nextInt();
+
+                            System.out.println("Best before /yyyy-MM-dd/: ");
+
+                            String bestBeforeStr = reader.next();
+
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            Date bestBefore = null;
+                            try {
+                                bestBefore = dateFormat.parse(bestBeforeStr);
+                            } catch (ParseException ex) {
+                                System.out.println("Wrong input entered! Enter a number!");
+                                break;
+                            }
+                            newProduct = new FoodProduct(name, barcode, manufacturer, calories, bestBefore);
+                            break;
+                        case "Cloth":
+                            System.out.println("Material: ");
+                            String mater = reader.nextLine();
+
+                            System.out.println("Type of the garment: ");
+                            String type = reader.nextLine();
+                            newProduct = new ClothingProduct(name, barcode, manufacturer, mater, type);
+                            break;
+
+                        default:
+                            System.out.println("Wrong input entered! Enter a product from the given list!");
+                            break;
+                    }
+
                     System.out.println("Please enter the quantity of the product");
+                    reader.nextLine();
                     String quantityString = reader.nextLine();
                     int quantity;
+
                     try {
                         quantity = Integer.parseInt(quantityString);
                     } catch (NumberFormatException ex) {
@@ -241,6 +282,7 @@ public class CmdProgram {
                     System.out.println("Please enter the price of the product");
                     String priceString = reader.nextLine();
                     float price;
+
                     try {
                         price = Float.parseFloat(priceString);
                     } catch (NumberFormatException ex) {
@@ -248,55 +290,9 @@ public class CmdProgram {
                         break;
                     }
 
-                    System.out.println("Please enter the type of the product! (Food, Cloth)");
-                    String cases = reader.nextLine();
                     try {
-                        switch (cases) {
-                            case "Food":
-                                System.out.println("Num of Calories: ");
-                                int calories = reader.nextInt();
-
-                                System.out.println("Best before /yyyy-MM-dd/: ");
-
-                                String bestBeforeStr = reader.next();
-
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                                Date bestBefore = null;
-                                try {
-                                    bestBefore = dateFormat.parse(bestBeforeStr);
-                                } catch (ParseException ex) {
-                                    System.out.println("Wrong input entered! Enter a number!");
-                                    break;
-                                }
-
-                                try {
-                                    shop.addNewProduct((new FoodProduct(name, barcode, manufacturer, calories, bestBefore)), quantity, price);
-
-                                } catch (ShopIsClosedException scl) {
-                                    System.out.println(scl.getMessage());
-                                }
-                                break;
-                            case "Cloth":
-                                System.out.println("Material: ");
-                                String mater = reader.nextLine();
-
-                                System.out.println("Type of the garment: ");
-                                String type = reader.nextLine();
-                                try{
-                                    shop.addNewProduct(new ClothingProduct(name, barcode, manufacturer, mater, type), quantity, price);
-                                    break;
-                                }catch (ShopIsClosedException shp) {
-                                    System.out.println(shp.getMessage());
-                                }
-                                break;
-
-                            default:
-                                System.out.println("Wrong input entered! Enter a product from the given list!");
-                                break;
-                        }
-
-
-                    } catch (ProductAlreadyExistsException ex) {
+                        shop.addNewProduct(newProduct, quantity, price);
+                    } catch (ProductAlreadyExistsException | ShopIsClosedException ex) {
                         System.out.println(ex.getMessage());
                     }
                     break;
@@ -313,7 +309,7 @@ public class CmdProgram {
                         break;
                     } catch (NoSuchProductException | ShopIsClosedException ex) {
                         System.out.println(ex.getMessage());
-
+                    }
                     break;
                 case "8":
                     int rounds = 0;
@@ -322,11 +318,11 @@ public class CmdProgram {
 
                     System.out.println("Enter how many you want to buy:");
                     int amount = reader.nextInt();
-                    while(rounds <amount) {
+                    while (rounds < amount) {
                         try {
                             cart.add(shop.buyProduct(code));
                             credit += (shop.getPrice(code));
-                            rounds ++;
+                            rounds++;
 
                         } catch (NoSuchProductException | ShopIsClosedException | OutOfStockException e) {
                             System.out.println(e.getMessage());
@@ -336,7 +332,7 @@ public class CmdProgram {
                     break;
                 case "9":
                     System.out.println("Your shopping cart list : ");
-                    for (Product prod:cart) {
+                    for (Product prod : cart) {
                         System.out.println(" - " + prod.getName());
                     }
                     System.out.println(credit);
@@ -351,3 +347,4 @@ public class CmdProgram {
         }
     }
 }
+
