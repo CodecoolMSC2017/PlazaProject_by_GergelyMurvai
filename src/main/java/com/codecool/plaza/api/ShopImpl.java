@@ -40,19 +40,28 @@ public class ShopImpl implements Shop {
         if (isOpen()) {
             for (ShopImplEntry temp : products.values()) {
                 productList.add(temp.getProduct());
-                return productList;
+
             }
         } else {
             throw new ShopIsClosedException("This shop is closed!\n");
         }
-        return null;
+        return productList;
 
     }
 
     @Override
-    public float getPrice(long barcode) {
-        return 0;
+    public float getPrice(long barcode) throws NoSuchProductException, ShopIsClosedException {
+        if (isOpen()) {
+            for (Map.Entry<Long, ShopImplEntry> entry : products.entrySet()) {
+                if (entry.getKey() == barcode) {
+                    return entry.getValue().getPrice();
+                }
+            }
+            throw new NoSuchProductException("No product with this barcode!\n");
+        }
+        throw new ShopIsClosedException("This shop is closed!\n");
     }
+
 
     @Override
     public boolean isOpen() {
@@ -97,14 +106,16 @@ public class ShopImpl implements Shop {
 
     public void addNewProduct(Product product, int quantity, float price) throws ProductAlreadyExistsException, ShopIsClosedException {
         if (isOpen()) {
-            if (hasProduct(product.getBarcode())) {
-                throw new ProductAlreadyExistsException("This product already exist!");
-            } else {
-                products.put(product.getBarcode(), new ShopImplEntry(product, quantity, price));
+            for (Map.Entry<Long, ShopImplEntry> entry : products.entrySet()) {
+                if (entry.getValue().getProduct().getBarcode() == product.getBarcode()) {
+                    throw new ProductAlreadyExistsException("Product with this barcode is already exist!\n");
+                }
             }
+            products.put(product.getBarcode(), new ShopImplEntry(product, quantity, price));
 
+        } else {
+            throw new ShopIsClosedException("This shop is closed!\n");
         }
-        throw new ShopIsClosedException("This shop is closed!");
     }
 
 
@@ -144,7 +155,7 @@ public class ShopImpl implements Shop {
         throw new ShopIsClosedException("This shop is closed!");
     }
 
-    private class ShopImplEntry {
+    class ShopImplEntry {
         private Product product;
         private int quantity;
         private float price;

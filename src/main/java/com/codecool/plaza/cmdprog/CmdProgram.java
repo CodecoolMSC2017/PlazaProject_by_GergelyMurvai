@@ -24,6 +24,7 @@ public class CmdProgram {
 
 
     public void run() {
+        createPlaza();
         mainMenu();
     }
 
@@ -32,14 +33,18 @@ public class CmdProgram {
         System.out.flush();
     }
 
-    public void mainMenu() {
-
+    public void createPlaza(){
         System.out.println("Type your name !");
         ownerName = reader.next();
         System.out.println("Type the new Plaza's name!");
         //String s = reader.nextLine();
         plazaName = reader.next();
         plaza = new PlazaImpl(ownerName, plazaName);
+    }
+
+    public void mainMenu() {
+
+
 
         while (true) {
             System.out.println("Welcome into the " + plaza.getName() + " owned by: " + plaza.getOwnerName() + "\n");
@@ -176,7 +181,7 @@ public class CmdProgram {
                         for (Product product : tempProductList) {
                             System.out.println(product.toString() + ", price: " + shop.getPrice(product.getBarcode()));
                         }
-                    } catch (ShopIsClosedException | NullPointerException ex) {
+                    } catch (ShopIsClosedException | NullPointerException |NoSuchProductException ex) {
                         System.out.println(ex.getMessage());
                     }
                     System.out.println("\n");

@@ -16,7 +16,7 @@ public interface Shop {
 
     public List<Product> getAllProducts() throws ShopIsClosedException ;
 
-    public float getPrice(long barcode);
+    public float getPrice(long barcode) throws NoSuchProductException, ShopIsClosedException;
 
     public Product findByName(String name) throws ShopIsClosedException, NoSuchProductException;
 
