@@ -155,7 +155,7 @@ public class ShopImpl implements Shop {
         throw new ShopIsClosedException("This shop is closed!");
     }
 
-    class ShopImplEntry {
+    private class ShopImplEntry {
         private Product product;
         private int quantity;
         private float price;
